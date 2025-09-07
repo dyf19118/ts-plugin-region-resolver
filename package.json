@@ -1,0 +1,20 @@
+{
+  "name": "ts-plugin-region-resolver",
+  "version": "0.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.1",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ],
+    "overrides": {}
+  }
+}
