@@ -38,16 +38,20 @@ function init(modules: { typescript: typeof ts }) {
       const regionFile = join(projectRoot, info.config.regionFile || '.region')
       createRegionWatcher(regionFile)
 
-      console.log('[ts-plugin-region-resolver] resolveModuleName', info.languageServiceHost.resolveModuleNames)
+      console.log(`[ts-plugin-region-resolver] ${typeof info.languageServiceHost.resolveModuleNames}`)
 
       const oldResolveModuleNameLiterals = info.languageServiceHost.resolveModuleNameLiterals?.bind(info.languageServiceHost);
-      console.log('[ts-plugin-region-resolver] nodeModulesPath', nodeModulesRegex.source)
+      console.log(`[ts-plugin-region-resolver] nodeModulesPath ${nodeModulesRegex.source}`)
       info.languageServiceHost.resolveModuleNameLiterals = (literals, containingFile, redirectedReference, options, ...rest) => {
         const resolvedModules = oldResolveModuleNameLiterals?.(literals, containingFile, redirectedReference, options, ...rest) ?? []
         return resolvedModules.map((mod, i) => {
           const literal = literals[i]
           const sourceName = literal.text
           const importer = ts.server.toNormalizedPath(containingFile)
+
+          if (sourceName.includes('.css') || sourceName.includes('.vue')) {
+            console.log('[ts-plugin-region-resolver]', sourceName, importer)
+          }
           
           if (nodeModulesRegex.test(importer)) {
             return mod
@@ -70,14 +74,15 @@ function init(modules: { typescript: typeof ts }) {
             ]
 
             for (const tryPath of tryPaths) {
-              console.log('[ts-plugin-region-resolver] tryPath', tryPath)
+              console.log(`[ts-plugin-region-resolver] tryPath: ${tryPath}`)
               if (existsSync(tryPath)) {
                 console.log('[ts-plugin-region-resolver] tryPath exists')
                 return {
                   resolvedModule: {
                     resolvedFileName: tryPath,
                     extension: ts.Extension.Ts
-                  }
+                  },
+                  failedLookupLocations: [],
                 }
               }
             }
